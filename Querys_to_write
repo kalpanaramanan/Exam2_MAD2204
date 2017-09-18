@@ -179,6 +179,20 @@ Q4) Display details of shipment data (Month, Day YYYY), sender and receiver name
 	+--------------+-----------------+----------------+
 	3 rows in set (0.00 sec)
 
+Q4 answers Query Modified
+
+MariaDB [examc0715368]> Select *,DATE_FORMAT(ShipmentDate, "%M %d, %Y") as Shipment_Date_formatted FROM Shipment;
++------------+--------------+---------+--------+-------------------------+
+| ShipmentID | ShipmentDate | Manager | Planet | Shipment_Date_formatted |
++------------+--------------+---------+--------+-------------------------+
+|          1 | 3004-05-11   |       1 |      1 | May 11, 3004            |
+|          2 | 3004-05-11   |       1 |      2 | May 11, 3004            |
+|          3 | 2017-09-18   |       2 |      3 | September 18, 2017      |
+|          4 | 2017-09-18   |       2 |      4 | September 18, 2017      |
+|          5 | 2017-09-18   |       7 |      5 | September 18, 2017      |
++------------+--------------+---------+--------+-------------------------+
+5 rows in set (0.00 sec)
+
 
 Q5) Give details of those shipments which are currently processed at plant name "Mars" or "Amazonia"
 	MariaDB [examc0715368]> SELECT * FROM Shipment AS s
