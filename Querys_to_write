@@ -108,14 +108,189 @@ INSERT INTO Package VALUES(4, 2, 'Undeclared', 27.0, 1, 2);
 INSERT INTO Package VALUES(5, 1, 'Undeclared', 100.0, 5, 1);
 
 Create all select queries as VIEW Object and name it as v1...vn
+  -- View has been Created for all Select Queries.
 
 Q1) Display employess who name is "Turanga Leela" along with its shipment dertails.
+	MariaDB [examc0715368]> SELECT * FROM Employee AS e
+	INNER JOIN Shipment AS s ON s.Manager = e.EmployeeID
+     AND e.Name = 'Turanga Leela';
+	+------------+---------------+----------+---------+---------+------------+--------------+---------+--------+
+	| EmployeeID | Name          | Position | Salary  | Remarks | ShipmentID | ShipmentDate | Manager | Planet |
+	+------------+---------------+----------+---------+---------+------------+--------------+---------+--------+
+	|          2 | Turanga Leela | Captain  | 9999.99 | NULL    |          3 | NULL         |       2 |      3 |
+	|          2 | Turanga Leela | Captain  | 9999.99 | NULL    |          4 | NULL         |       2 |      4 |
+	+------------+---------------+----------+---------+---------+------------+--------------+---------+--------+
+	2 rows in set (0.00 sec)
+	
 Q2) List those packages which are intented for client whose ids are 1,5 or 6
-Q3) Display name of emnployee and plant which are cleared
+	MariaDB [examc0715368]> SELECT * FROM Package AS p
+		 INNER JOIN Client AS c ON c.AccountNumber = p.Recipient
+		 AND c.AccountNumber in (1,5,6);
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	| Shipment | PackageNumber | Contents   | Weight | Sender | Recipient | AccountNumber | Name           |
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	|        3 |             2 | Undeclared |   3.00 |      5 |         1 |             1 | Zapp Brannigan |
+	|        4 |             1 | Undeclared |   5.00 |      4 |         5 |             5 | Leo Wong       |
+	|        5 |             1 | Undeclared | 100.00 |      5 |         1 |             1 | Zapp Brannigan |
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	3 rows in set (0.05 sec)
+
+	MariaDB [examc0715368]> SELECT * FROM Package AS p
+		 INNER JOIN Client AS c ON c.AccountNumber = p.Recipient
+		 AND p.Recipient in (1,5,6);
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	| Shipment | PackageNumber | Contents   | Weight | Sender | Recipient | AccountNumber | Name           |
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	|        3 |             2 | Undeclared |   3.00 |      5 |         1 |             1 | Zapp Brannigan |
+	|        4 |             1 | Undeclared |   5.00 |      4 |         5 |             5 | Leo Wong       |
+	|        5 |             1 | Undeclared | 100.00 |      5 |         1 |             1 | Zapp Brannigan |
+	+----------+---------------+------------+--------+--------+-----------+---------------+----------------+
+	3 rows in set (0.00 sec)
+
+Q3) Display name of employee and plant which are cleared
+	MariaDB [examc0715368]> SELECT * FROM Employee as e
+     INNER JOIN has_clearance AS h ON h.employee = e.EmployeeID;
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+----------+--------+-------+
+	| EmployeeID | Name                     | Position     | Salary  | Remarks                                            | Employee | Planet | Level |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+----------+--------+-------+
+	|          1 | Phillip J. Fry           | Delivery boy | 7500.00 | Not to be confused with the Philip J. Fry from Hov |        1 |      1 |     2 |
+	|          1 | Phillip J. Fry           | Delivery boy | 7500.00 | Not to be confused with the Philip J. Fry from Hov |        1 |      2 |     3 |
+	|          2 | Turanga Leela            | Captain      | 9999.99 | NULL                                               |        2 |      3 |     2 |
+	|          2 | Turanga Leela            | Captain      | 9999.99 | NULL                                               |        2 |      4 |     4 |
+	|          3 | Bender Bending Rodriguez | Robot        | 7500.00 | NULL                                               |        3 |      5 |     2 |
+	|          3 | Bender Bending Rodriguez | Robot        | 7500.00 | NULL                                               |        3 |      6 |     4 |
+	|          4 | Hubert J. Farnsworth     | CEO          | 9999.99 | NULL                                               |        4 |      7 |     1 |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+----------+--------+-------+
+7 rows in set (0.00 sec)
+
 Q4) Display details of shipment data (Month, Day YYYY), sender and receiver name whose package weight is between 5 and 10
+	
+	MariaDB [examc0715368]> SELECT CONCAT(Month(ShipmentDate),',',Day(ShipmentDate),' ',Year(ShipmentDate)) as ShipmentDate,sen.name as Sender_name,rec.name as Receipent_name FROM Shipment AS s
+		 INNER JOIN Package AS p ON p.Shipment = s.ShipmentID
+		 INNER JOIN Client AS sen ON sen.AccountNumber = p.sender
+		 INNER JOIN Client AS rec ON rec.AccountNumber = p.Recipient
+		 AND p.Weight BETWEEN 5 and 10;
+	+--------------+-----------------+----------------+
+	| ShipmentDate | Sender_name     | Receipent_name |
+	+--------------+-----------------+----------------+
+	| 5,11 3004    | Al Gore's Head  | Barbados Slim  |
+	| NULL         | Al Gore's Head  | Barbados Slim  |
+	| NULL         | Ogden Wernstrom | Leo Wong       |
+	+--------------+-----------------+----------------+
+	3 rows in set (0.00 sec)
+
+
 Q5) Give details of those shipments which are currently processed at plant name "Mars" or "Amazonia"
+	MariaDB [examc0715368]> SELECT * FROM Shipment AS s
+		 INNER JOIN  Planet AS p ON p.PlanetID = s.planet
+		 AND p.name in ('Mars','Amazonia');
+	+------------+--------------+---------+--------+----------+------+-------------+
+	| ShipmentID | ShipmentDate | Manager | Planet | PlanetID | Name | Coordinates |
+	+------------+--------------+---------+--------+----------+------+-------------+
+	|          3 | NULL         |       2 |      3 |        3 | Mars |     9999.99 |
+	+------------+--------------+---------+--------+----------+------+-------------+
+	1 row in set (0.00 sec)
+
 Q6) List client names whose pakages are "Undeclared"
+	MariaDB [examc0715368]> SELECT DISTINCT(c.Name) AS ClientNames FROM Package as p
+     INNER JOIN Client AS c ON c.AccountNumber  = p.Recipient
+     AND p.Contents = 'Undeclared';
+		+-----------------+
+		| ClientNames     |
+		+-----------------+
+		| Al Gore's Head  |
+		| Barbados Slim   |
+		| Ogden Wernstrom |
+		| Zapp Brannigan  |
+		| Leo Wong        |
+		+-----------------+
+		5 rows in set (0.00 sec)
+		
 Q7) Display those employees details containing salary format as $2,700.00
+		MariaDB [examc0715368]> SELECT *,CONCAT('$',FORMAT(Salary,2)) FROM Employee;
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+------------------------------+
+	| EmployeeID | Name                     | Position     | Salary  | Remarks                                            | CONCAT('$',FORMAT(Salary,2)) |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+------------------------------+
+	|          1 | Phillip J. Fry           | Delivery boy | 7500.00 | Not to be confused with the Philip J. Fry from Hov | $7,500.00                    |
+	|          2 | Turanga Leela            | Captain      | 9999.99 | NULL                                               | $9,999.99                    |
+	|          3 | Bender Bending Rodriguez | Robot        | 7500.00 | NULL                                               | $7,500.00                    |
+	|          4 | Hubert J. Farnsworth     | CEO          | 9999.99 | NULL                                               | $9,999.99                    |
+	|          5 | John A. Zoidberg         | Physician    |   25.00 | NULL                                               | $25.00                       |
+	|          6 | Amy Wong                 | Intern       | 5000.00 | NULL                                               | $5,000.00                    |
+	|          7 | Hermes Conrad            | Bureaucrat   | 9999.99 | NULL                                               | $9,999.99                    |
+	|          8 | Scruffy Scruffington     | Janitor      | 5000.00 | NULL                                               | $5,000.00                    |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+------------------------------+
+	8 rows in set (0.00 sec)
+
 Q8) Write query to Add remarks of those employee which are never remarked before.
+
+		MariaDB [examc0715368]> UPDATE Employee SET Remarks = 'Never remarked before' WHERE Remarks IS NULL;
+	Query OK, 7 rows affected (0.08 sec)
+	Rows matched: 7  Changed: 7  Warnings: 0
+
+	MariaDB [examc0715368]> SELECT * FROM Employee;
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+
+	| EmployeeID | Name                     | Position     | Salary  | Remarks                                            |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+
+	|          1 | Phillip J. Fry           | Delivery boy | 7500.00 | Not to be confused with the Philip J. Fry from Hov |
+	|          2 | Turanga Leela            | Captain      | 9999.99 | Never remarked before                              |
+	|          3 | Bender Bending Rodriguez | Robot        | 7500.00 | Never remarked before                              |
+	|          4 | Hubert J. Farnsworth     | CEO          | 9999.99 | Never remarked before                              |
+	|          5 | John A. Zoidberg         | Physician    |   25.00 | Never remarked before                              |
+	|          6 | Amy Wong                 | Intern       | 5000.00 | Never remarked before                              |
+	|          7 | Hermes Conrad            | Bureaucrat   | 9999.99 | Never remarked before                              |
+	|          8 | Scruffy Scruffington     | Janitor      | 5000.00 | Never remarked before                              |
+	+------------+--------------------------+--------------+---------+----------------------------------------------------+
+	8 rows in set (0.00 sec)
+
 Q9) Display employee details in following format "Phillip J. Fry is Delivery boy and earns $7,500.00/month"
+		MariaDB [examc0715368]> SELECT CONCAT(Name,' is ',Position,'and earns ', '$',Salary, '/month' ) FROM employee ;
+    
+    MariaDB [examc0715368]> SELECT @tsalary := CONCAT('$',FORMAT(salary,2)) FROM employee ;
++------------------------------------------+
+| @tsalary := CONCAT('$',FORMAT(salary,2)) |
++------------------------------------------+
+| $7,500.00                                |
+| $9,999.99                                |
+| $7,500.00                                |
+| $9,999.99                                |
+| $25.00                                   |
+| $5,000.00                                |
+| $9,999.99                                |
+| $5,000.00                                |
++------------------------------------------+
+8 rows in set (0.00 sec)
+
+    SELECT CONCAT(Name,' is ',Position,'and earns ', '$',FORMAT(Salary,2) as ns, '/month' ) FROM employee ;
+	+------------------------------------------------------------------+
+	| CONCAT(Name,' is ',Position,'and earns ', '$',Salary, '/month' ) |
+	+------------------------------------------------------------------+
+	| Phillip J. Fry is Delivery boyand earns $7500.00/month           |
+	| Turanga Leela is Captainand earns $9999.99/month                 |
+	| Bender Bending Rodriguez is Robotand earns $7500.00/month        |
+	| Hubert J. Farnsworth is CEOand earns $9999.99/month              |
+	| John A. Zoidberg is Physicianand earns $25.00/month              |
+	| Amy Wong is Internand earns $5000.00/month                       |
+	| Hermes Conrad is Bureaucratand earns $9999.99/month              |
+	| Scruffy Scruffington is Janitorand earns $5000.00/month          |
+	+------------------------------------------------------------------+
+	8 rows in set (0.00 sec)
+
 Q10) Update shipment date to current date for all data having NULL value
+
+	MariaDB [examc0715368]> UPDATE Shipment SET ShipmentDate = CURRENT_DATE()
+		 WHERE ShipmentDate IS NULL;
+	Query OK, 3 rows affected (0.05 sec)
+	Rows matched: 3  Changed: 3  Warnings: 0
+
+	MariaDB [examc0715368]> SELECT * FROM Shipment;
+	+------------+--------------+---------+--------+
+	| ShipmentID | ShipmentDate | Manager | Planet |
+	+------------+--------------+---------+--------+
+	|          1 | 3004-05-11   |       1 |      1 |
+	|          2 | 3004-05-11   |       1 |      2 |
+	|          3 | 2017-09-18   |       2 |      3 |
+	|          4 | 2017-09-18   |       2 |      4 |
+	|          5 | 2017-09-18   |       7 |      5 |
+	+------------+--------------+---------+--------+
+	5 rows in set (0.00 sec)
